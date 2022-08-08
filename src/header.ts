@@ -12,12 +12,13 @@ import moment = require('moment')
 import { languageDemiliters } from './delimiters'
 
 export type HeaderInfo = {
-  filename: string,
-  author: string,
-  createdBy: string,
-  createdAt: moment.Moment,
-  updatedBy: string,
-  updatedAt: moment.Moment
+    filename: string,
+    name: string,
+    contact: string,
+    createdBy: string,
+    createdAt: moment.Moment,
+    updatedBy: string,
+    updatedAt: moment.Moment
 }
 
 /**
@@ -26,13 +27,13 @@ export type HeaderInfo = {
 const genericTemplate = `
 ********************************************************************************
 *                                                                              *
-*                                                         :::      ::::::::    *
-*    $FILENAME__________________________________        :+:      :+:    :+:    *
-*                                                     +:+ +:+         +:+      *
-*    By: $AUTHOR________________________________    +#+  +:+       +#+         *
+*    $FILENAME__________________________________          :::      ::::::::    *
+*                                                       :+:      :+:    :+:    *
+*    By: $NAME__________________________________      +:+ +:+         +:+      *
+*    Contact: $CONTACT__________________________    +#+  +:+       +#+         *
 *                                                 +#+#+#+#+#+   +#+            *
 *    Created: $CREATEDAT_________ by $CREATEDBY_       #+#    #+#              *
-*    Updated: $UPDATEDAT_________ by $UPDATEDBY_      ###   ########.fr        *
+*    Updated: $UPDATEDAT_________ by $UPDATEDBY_      ###   ########.de        *
 *                                                                              *
 ********************************************************************************
 
@@ -95,45 +96,50 @@ const fieldRegex = (name: string) =>
 /**
  * Get value for given field name from header string
  */
-const getFieldValue = (header: string, name: string) => {
-  const [_, offset, field] = genericTemplate.match(fieldRegex(name))
+const getFieldValue =
+    (header: string, name: string) => {
+        const [_, offset, field] = genericTemplate.match(fieldRegex(name))
 
-  return header.substr(offset.length, field.length)
-}
+        return header.substr(offset.length, field.length)
+    }
 
 /**
  * Set field value in header string
  */
-const setFieldValue = (header: string, name: string, value: string) => {
-  const [_, offset, field] = genericTemplate.match(fieldRegex(name))
+const setFieldValue =
+    (header: string, name: string, value: string) => {
+        const [_, offset, field] = genericTemplate.match(fieldRegex(name))
 
-  return header.substr(0, offset.length)
-    .concat(pad(value, field.length))
-    .concat(header.substr(offset.length + field.length))
-}
+        return header.substr(0, offset.length)
+            .concat(pad(value, field.length))
+            .concat(header.substr(offset.length + field.length))
+    }
 
 /**
  * Extract header info from header string
  */
 export const getHeaderInfo = (header: string): HeaderInfo => ({
-  filename: getFieldValue(header, 'FILENAME'),
-  author: getFieldValue(header, 'AUTHOR'),
-  createdBy: getFieldValue(header, 'CREATEDBY'),
-  createdAt: parseDate(getFieldValue(header, 'CREATEDAT')),
-  updatedBy: getFieldValue(header, 'UPDATEDBY'),
-  updatedAt: parseDate(getFieldValue(header, 'UPDATEDAT'))
+    filename: getFieldValue(header, 'FILENAME'),
+    name: getFieldValue(header, 'NAME'),
+    contact: getFieldValue(header, 'CONTACT'),
+    createdBy: getFieldValue(header, 'CREATEDBY'),
+    createdAt: parseDate(getFieldValue(header, 'CREATEDAT')),
+    updatedBy: getFieldValue(header, 'UPDATEDBY'),
+    updatedAt: parseDate(getFieldValue(header, 'UPDATEDAT'))
 })
 
 /**
  * Renders a language template with header info
  */
-export const renderHeader = (languageId: string, info: HeaderInfo) => [
-  { name: 'FILENAME', value: info.filename },
-  { name: 'AUTHOR', value: info.author },
-  { name: 'CREATEDAT', value: formatDate(info.createdAt) },
-  { name: 'CREATEDBY', value: info.createdBy },
-  { name: 'UPDATEDAT', value: formatDate(info.updatedAt) },
-  { name: 'UPDATEDBY', value: info.updatedBy }
-].reduce((header, field) =>
-  setFieldValue(header, field.name, field.value),
-  getTemplate(languageId))
+export const renderHeader =
+    (languageId: string,
+     info: HeaderInfo) => [{name: 'FILENAME', value: info.filename},
+                           {name: 'NAME', value: info.name},
+                           {name: 'CONTACT', value: info.contact},
+                           {name: 'CREATEDAT', value: formatDate(info.createdAt)},
+                           {name: 'CREATEDBY', value: info.createdBy},
+                           {name: 'UPDATEDAT', value: formatDate(info.updatedAt)},
+                           {name: 'UPDATEDBY', value: info.updatedBy}]
+                              .reduce(
+                                  (header, field) => setFieldValue(header, field.name, field.value),
+                                  getTemplate(languageId))
